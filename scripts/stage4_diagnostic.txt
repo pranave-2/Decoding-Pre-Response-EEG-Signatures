@@ -1,0 +1,31 @@
+# Run this in a Colab cell. Replace the path with one of your 63-channel
+# subjects (sub-01, 04, 07, 10, 12, 13, or 21) -- a subject that HAS excluded
+# channels, so the metadata field will be non-trivial if it exists at all.
+
+F = "/content/drive/MyDrive/YOUR_PATH/sub-01/EEG/EEG_data_sub-01_run-01.mat"
+
+!octave --no-gui --quiet --eval "\
+load('{F}','EEGdata'); \
+printf('--- fieldnames ---\\n'); disp(fieldnames(EEGdata)); \
+printf('--- size(Y) ---\\n'); disp(size(EEGdata.Y)); \
+printf('--- crr_channels ---\\n'); \
+  disp(class(EEGdata.crr_channels)); disp(size(EEGdata.crr_channels)); \
+  disp(EEGdata.crr_channels); \
+printf('--- chnan ---\\n'); disp(size(EEGdata.chnan)); disp(EEGdata.chnan); \
+printf('--- nanidx ---\\n'); disp(size(EEGdata.nanidx)); disp(EEGdata.nanidx); \
+"
+
+# WHAT TO LOOK FOR in crr_channels:
+#
+#  (a) a vector of 63 integers in 1..64  -> THIS IS THE ANSWER.
+#      It lists which physical electrodes were retained. Full alignment
+#      for all 24 subjects becomes possible.
+#
+#  (b) a vector of 1 integer (or a few)  -> these are the EXCLUDED channels.
+#      Also usable: retained = setdiff(1:64, crr_channels).
+#
+#  (c) a cell array of channel NAME strings ('Fp1','Fz',...) -> even better,
+#      gives explicit electrode labels.
+#
+#  (d) empty / a scalar like 63          -> no identity info. Fall back to
+#      the 15 subjects with the complete 64-channel montage.
